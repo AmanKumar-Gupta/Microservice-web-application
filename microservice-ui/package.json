@@ -25,6 +25,7 @@
     "bootstrap": "^4.1.1",
     "font-awesome": "^4.7.0",
     "hammerjs": "^2.0.8",
+    "microservice-ui": "file:",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",
     "zone.js": "~0.9.1"
