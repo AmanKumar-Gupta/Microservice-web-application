@@ -1,16 +1,16 @@
-# Use Node.js image
-FROM node:12.13.1
+FROM node:12.13.1 as builder
 
 WORKDIR /app
 
-# Copy project files into the container
 COPY . .
 
-# Install dependencies
 RUN npm install
 
-# Expose the port the app runs on
-EXPOSE 3000
+RUN npm run-script build
+# Use an Nginx image to serve the built files
+FROM nginx:alpine
 
-# Start the application
-CMD ["npm", "start"]
+# # Copy the built files into the Nginx container
+COPY --from=builder /app/dist/microservice-ui /usr/share/nginx/html
+
+EXPOSE 80
