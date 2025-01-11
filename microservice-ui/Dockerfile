@@ -6,11 +6,6 @@ COPY . .
 
 RUN npm install
 
-RUN npm run-script build
-# Use an Nginx image to serve the built files
-FROM nginx:alpine
+EXPOSE 4200
 
-# # Copy the built files into the Nginx container
-COPY --from=builder /app/dist/microservice-ui /usr/share/nginx/html
-
-EXPOSE 80
+CMD ["npm", "start"]
