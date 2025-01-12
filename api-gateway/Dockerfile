@@ -1,30 +1,31 @@
-# Use the official Maven image to build the app
+# Build stage
 FROM maven:3.8.4-openjdk-11-slim as builder
 
-# Set the working directory
 WORKDIR /app
 
-# Copy the pom.xml and install dependencies (skip tests for faster builds)
-COPY . .
+# Copy only pom.xml first to cache dependencies
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-RUN mvn clean install -DskipTests
-
-# Copy the source code
-
-# Package the application
+# Copy source code and build
+COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Use an official OpenJDK image for running the app
-FROM openjdk:11-jre-slim
+# Run stage - using the smallest possible JRE base image
+FROM adoptopenjdk/openjdk11:jre-11.0.11_9-alpine
 
-# Set the working directory
 WORKDIR /app
 
-# Copy the jar file from the builder stage
+# Copy jar from builder stage and rename it to reduce path length
 COPY --from=builder /app/target/*.jar app.jar
 
-# Expose the port
+# Configure minimal JVM options
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Xss256k -XX:MaxMetaspaceSize=128M"
+
 EXPOSE 8000
 
-# Run the jar file
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+# Using a minimal health check to save space
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD wget -q --spider http://localhost:8000/actuator/health || exit 1
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
