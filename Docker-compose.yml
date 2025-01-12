@@ -35,10 +35,9 @@ services:
     build:
       context: ./microservice-ui
     ports:
-      - "80:4200"
+      - "80:80"
 
   rabbitmq:
-    image: "rabbitmq:management"
+    image: "rabbitmq:alpine"
     ports:
-      - "15672:15672"
-      - "5672:5672"
+      - "5672:5672" # Remove port 15672 as there is no management UI
